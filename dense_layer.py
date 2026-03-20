@@ -64,10 +64,20 @@ class DenseLayer:
         dL_dW = np.dot(self.X.T, dL_dZ)  # Shape (n_inputs, n_outputs)
         dL_db = np.sum(dL_dZ, axis=0, keepdims=True)  # Shape (1, n_outputs)
         dL_dX = np.dot(dL_dZ, self.W.T)  # Shape (batch_size, n_inputs)
+        np.
 
         # update weights and biases
         self.W -= learning_rate * dL_dW
         self.b -= learning_rate * dL_db
+        return dL_dX
+
+class ReLULayer:
+    def forward(self, x: np.ndarray) -> np.ndarray:
+        self.x = x  # Cache for backprop
+        return np.maximum(0, x)
+
+    def backward(self, dL_dZ: np.ndarray) -> np.ndarray:
+        dL_dX = dL_dZ * (self.x > 0)
         return dL_dX
 
 if __name__ == "__main__":
