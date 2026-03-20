@@ -1,28 +1,14 @@
 import numpy as np
 
 class DenseLayer:
-    """
-    Fully-connected linear layer: Z = XW + b
-
-    Stores forward-pass values needed for backprop later.
-    """
-
     def __init__(self, n_inputs: int, n_outputs: int,
                     init: str = 'xavier_uniform', seed: int = None):
-        """
-        Args:
-            n_inputs:   Number of input features (fan-in)
-            n_outputs:  Number of neurons in this layer (fan-out)
-            init:       Weight initialization scheme
-            seed:       RNG seed for reproducibility
-        """
         if seed is not None:
             np.random.seed(seed)
 
         self.n_inputs = n_inputs
         self.n_outputs = n_outputs
 
-        # --- Weight initialization ---
         if init == 'xavier_uniform':
             limit = np.sqrt(6.0 / (n_inputs + n_outputs))
             self.W = np.random.uniform(-limit, limit, size=(n_inputs, n_outputs))
@@ -35,45 +21,32 @@ class DenseLayer:
             raise ValueError(f"Unknown init scheme: '{init}'. "
                                 f"Use 'xavier_uniform' or 'xavier_normal'.")
 
-        # Biases always start at zero
-        self.b = np.zeros((1, n_outputs))  # Shape (1, n_outputs) for broadcasting
+        self.b = np.zeros((1, n_outputs))
 
-        # Cache for backprop (populated during forward pass)
-        self.X = None   # Input to this layer
-        self.Z = None   # Pre-activation output
+        self.X = None
+        self.Z = None
 
     def forward(self, X: np.ndarray) -> np.ndarray:
-        """
-        Forward pass: Z = XW + b
-
-        Args:
-            X: Input array of shape (batch_size, n_inputs)
-
-        Returns:
-            Z: Pre-activation output of shape (batch_size, n_outputs)
-        """
         assert X.shape[1] == self.n_inputs, (
             f"Input shape mismatch: expected (batch, {self.n_inputs}), got {X.shape}"
         )
 
-        self.X = X  # Cache — you'll need this for dL/dW in backprop
-        self.Z = X @ self.W + self.b  # @ is np.matmul; clean and explicit
+        self.X = X
+        self.Z = X @ self.W + self.b
         return self.Z
 
     def backward(self, dL_dZ, learning_rate: float) -> np.ndarray:
-        dL_dW = np.dot(self.X.T, dL_dZ)  # Shape (n_inputs, n_outputs)
-        dL_db = np.sum(dL_dZ, axis=0, keepdims=True)  # Shape (1, n_outputs)
-        dL_dX = np.dot(dL_dZ, self.W.T)  # Shape (batch_size, n_inputs)
-        np.
+        dL_dW = np.dot(self.X.T, dL_dZ)
+        dL_db = np.sum(dL_dZ, axis=0, keepdims=True)
+        dL_dX = np.dot(dL_dZ, self.W.T)
 
-        # update weights and biases
         self.W -= learning_rate * dL_dW
         self.b -= learning_rate * dL_db
         return dL_dX
 
 class ReLULayer:
     def forward(self, x: np.ndarray) -> np.ndarray:
-        self.x = x  # Cache for backprop
+        self.x = x  
         return np.maximum(0, x)
 
     def backward(self, dL_dZ: np.ndarray) -> np.ndarray:
