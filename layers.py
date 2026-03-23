@@ -46,12 +46,33 @@ class DenseLayer:
 
 class ReLULayer:
     def forward(self, x: np.ndarray) -> np.ndarray:
-        self.x = x  
+        self.x = x
         return np.maximum(0, x)
 
     def backward(self, dL_dZ: np.ndarray) -> np.ndarray:
         dL_dX = dL_dZ * (self.x > 0)
         return dL_dX
+
+class softmaxLayer:
+    def forward(self, x: np.ndarray) -> np.ndarray:
+        exps = np.exp(x - np.max(x, axis=1, keepdims=True))
+        return exps / np.sum(exps, axis=1, keepdims=True)
+    def backward(self, dL_dZ: np.ndarray) -> np.ndarray:
+        # Softmax backward is usually combined with cross-entropy, so this is a placeholder
+        return dL_dZ
+
+class SoftmaxCrossEntropy:
+    def forward(self, x, y):
+        exps = np.exp(x - np.max(x, axis=1, keepdims=True))
+        self.softmax = exps / np.sum(exps, axis=1, keepdims=True)
+        self.y = y
+        loss = -np.sum(y * np.log(self.softmax + 1e-15)) / x.shape[0]
+        return loss
+    def backward(self):
+        batch_size = self.y.shape[0]
+        dL_dZ = (self.softmax - self.y) / batch_size
+        return dL_dZ
+
 
 if __name__ == "__main__":
     # --- Sanity Check Suite ---
@@ -86,30 +107,3 @@ if __name__ == "__main__":
     # 6. Cache check — X must be stored for backprop
     assert layer.X is not None, "Forward pass didn't cache input X"
     print("✓ Input X cached for backprop")
-    """
-
-    **What you're looking for in output #5:** Z mean ≈ 0, Z std ≈ 0.8–1.2. If Xavier is working, you won't see std of 10 or 0.01 — that's the whole point.
-
-    ---
-
-    ## One Numerical Stability Note (For Later)
-
-    The dense layer itself is numerically clean — it's just a matrix multiply. The danger zones are coming: **softmax** (exp overflow) and **cross-entropy** (log of near-zero). I'll flag those precisely when we get there. Plant this in your mind: you'll handle them by subtracting the max before exp, and you'll combine softmax + cross-entropy into a single numerically-stable function. Don't implement them separately and naively.
-
-    ---
-
-    ## What's Coming Next
-
-    Once you've run those sanity checks and the layer feels solid, the natural build order is:
-
-    1. **ReLU activation** — trivial forward, but the backward has a subtle mask operation
-    2. **Softmax** — needs the numerical stability trick from day one
-    3. **Cross-entropy loss** — and then immediately fuse it with softmax
-    4. **Backprop through the dense layer** — this is where `self.X` and `self.Z` caches pay off
-
-    The backprop equation for this layer is:
-    ```
-    dL/dW = X.T @ dL/dZ
-    dL/db = sum(dL/dZ, axis=0, keepdims=True)
-    dL/dX = dL/dZ @ W.T   ← this propagates the gradient to the previous layer
-"""
