@@ -11,14 +11,14 @@ class NeuralNetwork:
             X = layer.forward(X)
         return X
 
-    def backward(self, dL_dZ, learning_rate):
+    def backward(self, dL_dZ, learning_rate, optimizer):
         for layer in reversed(self.layers):
             if isinstance(layer, ReLULayer):
                 dL_dZ = layer.backward(dL_dZ)
             else:
-                dL_dZ = layer.backward(dL_dZ, learning_rate)
+                dL_dZ = layer.backward(dL_dZ, learning_rate, optimizer)
 
-    def train(self, X, y, epochs, learning_rate, batch_size):
+    def train(self, X, y, epochs, learning_rate, batch_size, optimizer):
         for epoch in range(epochs):
             indices = np.random.permutation(X.shape[0])
             X = X[indices]
@@ -29,7 +29,7 @@ class NeuralNetwork:
                 output = self.forward(X_batch)  # through dense+relu layers only
                 loss = self.loss_fn.forward(output, y_batch)  # loss layer separately
                 dL_dZ = self.loss_fn.backward()
-                self.backward(dL_dZ, learning_rate)
+                self.backward(dL_dZ, learning_rate, optimizer)
             if (epoch + 1) % 10 == 0:
                 print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss:.4f}")
 
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     loss_fn = SoftmaxCrossEntropy()
     nn = NeuralNetwork(layers, loss_fn)
     # Train
-    nn.train(X_train, y_train_one_hot, epochs=100, learning_rate=0.001, batch_size=32)
+    nn.train(X_train, y_train_one_hot, epochs=100, learning_rate=0.01, batch_size=32, optimizer='momentum')
     acc = nn.accuracy(X_train, y_train)
     print(f"Training Accuracy: {acc * 100:.2f}%")
     X_test, y_test = load_mnist('data/t10k-images-idx3-ubyte', 'data/t10k-labels-idx1-ubyte')

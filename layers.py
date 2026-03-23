@@ -29,6 +29,9 @@ class DenseLayer:
         self.v_b = np.zeros_like(self.b)
         self.t = 0
 
+        self.v_W_momentum = np.zeros_like(self.W)
+        self.v_b_momentum = np.zeros_like(self.b)
+
         self.X = None
         self.Z = None
 
@@ -41,33 +44,42 @@ class DenseLayer:
         self.Z = X @ self.W + self.b
         return self.Z
 
-    def backward(self, dL_dZ: np.ndarray, learning_rate: float,
-        beta1=0.9, beta2=0.999, epsilon=1e-8) -> np.ndarray:
+    def backward(self, dL_dZ: np.ndarray, learning_rate: float, optimizer='sgd', beta=0.9, beta1=0.9, beta2=0.999, epsilon=1e-8) -> np.ndarray:
         dL_dW = np.dot(self.X.T, dL_dZ)
         dL_db = np.sum(dL_dZ, axis=0, keepdims=True)
         dL_dX = np.dot(dL_dZ, self.W.T)
 
-        # increment step
-        self.t += 1
+        if optimizer == 'sgd':
+            self.W -= learning_rate * dL_dW
+            self.b -= learning_rate * dL_db
 
-        # update first moment
-        self.m_W = beta1 * self.m_W + (1 - beta1) * dL_dW
-        self.m_b = beta1 * self.m_b + (1 - beta1) * dL_db
+        elif optimizer == 'momentum':
+            self.v_W_momentum = beta * self.v_W_momentum + (1 - beta) * dL_dW
+            self.v_b_momentum = beta * self.v_b_momentum + (1 - beta) * dL_db
+            self.W -= learning_rate * self.v_W_momentum
+            self.b -= learning_rate * self.v_b_momentum
 
-        # update second moment
-        self.v_W = beta2 * self.v_W + (1 - beta2) * dL_dW ** 2
-        self.v_b = beta2 * self.v_b + (1 - beta2) * dL_db ** 2
+        elif optimizer == 'adam':
+            # increment step
+            self.t += 1
 
-        # bias correction
-        m_W_hat = self.m_W / (1 - beta1 ** self.t)
-        m_b_hat = self.m_b / (1 - beta1 ** self.t)
-        v_W_hat = self.v_W / (1 - beta2 ** self.t)
-        v_b_hat = self.v_b / (1 - beta2 ** self.t)
+            # update first moment
+            self.m_W = beta1 * self.m_W + (1 - beta1) * dL_dW
+            self.m_b = beta1 * self.m_b + (1 - beta1) * dL_db
 
-        # update weights
-        self.W -= learning_rate * m_W_hat / (np.sqrt(v_W_hat) + epsilon)
-        self.b -= learning_rate * m_b_hat / (np.sqrt(v_b_hat) + epsilon)
+            # update second moment
+            self.v_W = beta2 * self.v_W + (1 - beta2) * dL_dW ** 2
+            self.v_b = beta2 * self.v_b + (1 - beta2) * dL_db ** 2
 
+            # bias correction
+            m_W_hat = self.m_W / (1 - beta1 ** self.t)
+            m_b_hat = self.m_b / (1 - beta1 ** self.t)
+            v_W_hat = self.v_W / (1 - beta2 ** self.t)
+            v_b_hat = self.v_b / (1 - beta2 ** self.t)
+
+            # update weights
+            self.W -= learning_rate * m_W_hat / (np.sqrt(v_W_hat) + epsilon)
+            self.b -= learning_rate * m_b_hat / (np.sqrt(v_b_hat) + epsilon)
         return dL_dX
 class ReLULayer:
     def forward(self, x: np.ndarray) -> np.ndarray:
