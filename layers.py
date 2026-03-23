@@ -53,14 +53,6 @@ class ReLULayer:
         dL_dX = dL_dZ * (self.x > 0)
         return dL_dX
 
-class softmaxLayer:
-    def forward(self, x: np.ndarray) -> np.ndarray:
-        exps = np.exp(x - np.max(x, axis=1, keepdims=True))
-        return exps / np.sum(exps, axis=1, keepdims=True)
-    def backward(self, dL_dZ: np.ndarray) -> np.ndarray:
-        # Softmax backward is usually combined with cross-entropy, so this is a placeholder
-        return dL_dZ
-
 class SoftmaxCrossEntropy:
     def forward(self, x, y):
         exps = np.exp(x - np.max(x, axis=1, keepdims=True))
