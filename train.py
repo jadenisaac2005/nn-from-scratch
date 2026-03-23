@@ -18,12 +18,18 @@ class NeuralNetwork:
             else:
                 dL_dZ = layer.backward(dL_dZ, learning_rate)
 
-    def train(self, X, y, epochs, learning_rate):
+    def train(self, X, y, epochs, learning_rate, batch_size):
         for epoch in range(epochs):
-            output = self.forward(X)  # through dense+relu layers only
-            loss = self.loss_fn.forward(output, y)  # loss layer separately
-            dL_dZ = self.loss_fn.backward()
-            self.backward(dL_dZ, learning_rate)
+            indices = np.random.permutation(X.shape[0])
+            X = X[indices]
+            y = y[indices]
+            for i in range(0, X.shape[0], batch_size):
+                X_batch = X[i:i+batch_size]
+                y_batch = y[i:i+batch_size]
+                output = self.forward(X_batch)  # through dense+relu layers only
+                loss = self.loss_fn.forward(output, y_batch)  # loss layer separately
+                dL_dZ = self.loss_fn.backward()
+                self.backward(dL_dZ, learning_rate)
             if (epoch + 1) % 10 == 0:
                 print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss:.4f}")
 
@@ -48,6 +54,9 @@ if __name__ == "__main__":
     loss_fn = SoftmaxCrossEntropy()
     nn = NeuralNetwork(layers, loss_fn)
     # Train
-    nn.train(X_train, y_train_one_hot, epochs=100, learning_rate=0.01)
+    nn.train(X_train, y_train_one_hot, epochs=100, learning_rate=0.01, batch_size=32)
     acc = nn.accuracy(X_train, y_train)
     print(f"Training Accuracy: {acc * 100:.2f}%")
+    X_test, y_test = load_mnist('data/t10k-images-idx3-ubyte', 'data/t10k-labels-idx1-ubyte')
+    test_acc = nn.accuracy(X_test, y_test)
+    print(f"Test Accuracy: {test_acc * 100:.2f}%")
