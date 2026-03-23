@@ -27,6 +27,11 @@ class NeuralNetwork:
             if (epoch + 1) % 10 == 0:
                 print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss:.4f}")
 
+    def accuracy(self, X, y):
+        output = self.forward(X)
+        predictions = np.argmax(output, axis=1)
+        return np.mean(predictions == y)
+
 if __name__ == "__main__":
     # Load MNIST from local files (implement this function)
     X_train, y_train = load_mnist('data/train-images-idx3-ubyte', 'data/train-labels-idx1-ubyte')
@@ -44,3 +49,5 @@ if __name__ == "__main__":
     nn = NeuralNetwork(layers, loss_fn)
     # Train
     nn.train(X_train, y_train_one_hot, epochs=100, learning_rate=0.01)
+    acc = nn.accuracy(X_train, y_train)
+    print(f"Training Accuracy: {acc * 100:.2f}%")
