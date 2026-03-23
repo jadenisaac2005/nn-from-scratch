@@ -54,7 +54,7 @@ if __name__ == "__main__":
     loss_fn = SoftmaxCrossEntropy()
     nn = NeuralNetwork(layers, loss_fn)
     # Train
-    nn.train(X_train, y_train_one_hot, epochs=100, learning_rate=0.01, batch_size=32)
+    nn.train(X_train, y_train_one_hot, epochs=100, learning_rate=0.001, batch_size=32)
     acc = nn.accuracy(X_train, y_train)
     print(f"Training Accuracy: {acc * 100:.2f}%")
     X_test, y_test = load_mnist('data/t10k-images-idx3-ubyte', 'data/t10k-labels-idx1-ubyte')
