@@ -18,7 +18,7 @@ class NeuralNetwork:
             else:
                 dL_dZ = layer.backward(dL_dZ, learning_rate, optimizer)
 
-    def train(self, X, y, epochs, learning_rate, batch_size, optimizer):
+    def train(self, X, y, epochs = 100, learning_rate = 0.01, batch_size = 32, optimizer = 'sgd'):
         for epoch in range(epochs):
             indices = np.random.permutation(X.shape[0])
             X = X[indices]
