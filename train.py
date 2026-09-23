@@ -18,9 +18,12 @@ class NeuralNetwork:
             else:
                 dL_dZ = layer.backward(dL_dZ, learning_rate, optimizer)
 
-    def train(self, X, y, epochs = 100, learning_rate = 0.01, batch_size = 32, optimizer = 'sgd'):
+    def train(self, X, y, epochs = 100, learning_rate = 0.01, batch_size = 32, optimizer = 'sgd',
+              seed = None, X_test = None, y_test = None):
+        rng = np.random.default_rng(seed)
+        history = {'epoch': [], 'train_loss': [], 'test_acc': []}
         for epoch in range(epochs):
-            indices = np.random.permutation(X.shape[0])
+            indices = rng.permutation(X.shape[0])
             X = X[indices]
             y = y[indices]
             for i in range(0, X.shape[0], batch_size):
@@ -32,6 +35,11 @@ class NeuralNetwork:
                 self.backward(dL_dZ, learning_rate, optimizer)
             if (epoch + 1) % 10 == 0:
                 print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss:.4f}")
+            history['epoch'].append(epoch + 1)
+            history['train_loss'].append(float(loss))
+            if X_test is not None and y_test is not None:
+                history['test_acc'].append(float(self.accuracy(X_test, y_test)))
+        return history
 
     def accuracy(self, X, y):
         output = self.forward(X)

@@ -30,20 +30,26 @@ Implement a fully connected neural network from scratch (NumPy only) and analyze
 
 ## Results
 
-| Training Setup | Test Accuracy | Notes |
+Architecture 784→128→10, 100 epochs, batch size 32, layer-init seeds (42, 43), shuffle seed 0.
+Per-epoch training loss and test accuracy for every run are in [results/history.json](results/history.json); full config in [results/summary.json](results/summary.json).
+
+| Optimizer | Learning Rate | Test Accuracy |
 | --- | --- | --- |
-| Full-batch SGD | 68.59% | Baseline |
-| Mini-batch SGD (lr=0.01) | 97.82% | batch=32 |
-| Adam (lr=0.01) | 97.05% | Unstable — loss spikes |
-| Adam (lr=0.001) | 97.83% | Stable |
-| Momentum (lr=0.01) | 97.87% | Best result |
+| SGD | 0.01 | 97.90% |
+| Momentum (β=0.9) | 0.01 | 97.87% |
+| Adam | 0.001 | 97.91% |
+
+Reproduce with:
+
+```bash
+python run_comparison.py
+```
 
 ## Key Insights
 
-- Mini-batch vs full-batch is the single biggest accuracy jump (+29%)
-- Adam with wrong learning rate performs worse than SGD
-- Momentum edges out both SGD and Adam on this task
-- All three optimizers converge to ~97.8-97.9% with correct tuning
+- All three optimizers converge to ~97.9% test accuracy with correctly tuned learning rates
+- Adam reaches near-zero training loss fastest but shows occasional late-training loss spikes (e.g. epoch 80)
+- SGD and Momentum follow near-identical loss curves at this learning rate — see [results/history.json](results/history.json)
 
 ## Stack
 
