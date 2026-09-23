@@ -23,7 +23,7 @@
   },
   "final_test_acc": {
     "sgd": 0.979,
-    "momentum": 0.9787,
+    "momentum": 0.9807,
     "adam": 0.9791
   }
 }

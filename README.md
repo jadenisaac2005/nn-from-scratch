@@ -33,11 +33,11 @@ Implement a fully connected neural network from scratch (NumPy only) and analyze
 Architecture 784→128→10, 100 epochs, batch size 32, layer-init seeds (42, 43), shuffle seed 0.
 Per-epoch training loss and test accuracy for every run are in [results/history.json](results/history.json); full config in [results/summary.json](results/summary.json).
 
-| Optimizer | Learning Rate | Test Accuracy |
-| --- | --- | --- |
-| SGD | 0.01 | 97.90% |
-| Momentum (β=0.9) | 0.01 | 97.87% |
-| Adam | 0.001 | 97.91% |
+| Optimizer | Learning Rate | Test Accuracy | First Epoch ≥ 97% |
+| --- | --- | --- | --- |
+| SGD | 0.01 | 97.90% | 26 |
+| Momentum (β=0.9) | 0.01 | 98.07% | 4 |
+| Adam | 0.001 | 97.91% | 2 |
 
 Reproduce with:
 
@@ -47,9 +47,13 @@ python run_comparison.py
 
 ## Key Insights
 
-- All three optimizers converge to ~97.9% test accuracy with correctly tuned learning rates
-- Adam reaches near-zero training loss fastest but shows occasional late-training loss spikes (e.g. epoch 80)
-- SGD and Momentum follow near-identical loss curves at this learning rate — see [results/history.json](results/history.json)
+- All three optimizers converge to ~97.9–98.1% test accuracy with correctly tuned learning rates
+- Momentum and Adam reach 97% test accuracy within the first handful of epochs (4 and 2 respectively), while SGD takes 26 epochs to catch up
+- SGD and Momentum training loss curves are monotonically decreasing every epoch; Adam's epoch-mean loss still fluctuates upward on ~40% of epochs late in training, which is genuine Adam noise rather than a logging artifact — see [results/history.json](results/history.json)
+
+## What Broke
+
+An earlier version implemented momentum in EMA form (v = βv + (1−β)g), which at the same learning rate behaves like plain SGD; replaced with classical momentum.
 
 ## Stack
 

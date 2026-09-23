@@ -54,8 +54,8 @@ class DenseLayer:
             self.b -= learning_rate * dL_db
 
         elif optimizer == 'momentum':
-            self.v_W_momentum = beta * self.v_W_momentum + (1 - beta) * dL_dW
-            self.v_b_momentum = beta * self.v_b_momentum + (1 - beta) * dL_db
+            self.v_W_momentum = beta * self.v_W_momentum + dL_dW
+            self.v_b_momentum = beta * self.v_b_momentum + dL_db
             self.W -= learning_rate * self.v_W_momentum
             self.b -= learning_rate * self.v_b_momentum
 

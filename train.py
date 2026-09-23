@@ -26,6 +26,8 @@ class NeuralNetwork:
             indices = rng.permutation(X.shape[0])
             X = X[indices]
             y = y[indices]
+            loss_sum = 0.0
+            n_samples = 0
             for i in range(0, X.shape[0], batch_size):
                 X_batch = X[i:i+batch_size]
                 y_batch = y[i:i+batch_size]
@@ -33,10 +35,13 @@ class NeuralNetwork:
                 loss = self.loss_fn.forward(output, y_batch)  # loss layer separately
                 dL_dZ = self.loss_fn.backward()
                 self.backward(dL_dZ, learning_rate, optimizer)
+                loss_sum += loss * X_batch.shape[0]
+                n_samples += X_batch.shape[0]
+            epoch_loss = loss_sum / n_samples
             if (epoch + 1) % 10 == 0:
-                print(f"Epoch {epoch + 1}/{epochs}, Loss: {loss:.4f}")
+                print(f"Epoch {epoch + 1}/{epochs}, Loss: {epoch_loss:.4f}")
             history['epoch'].append(epoch + 1)
-            history['train_loss'].append(float(loss))
+            history['train_loss'].append(float(epoch_loss))
             if X_test is not None and y_test is not None:
                 history['test_acc'].append(float(self.accuracy(X_test, y_test)))
         return history
